@@ -1,0 +1,25 @@
+#cloud-config
+preserve_hostname: false
+manage_etc_hosts: true
+
+write_files:
+  - path: /run/portainer-bootstrap/admin-password
+    owner: root:root
+    permissions: '0600'
+    content: |-
+      REPLACE_WITH_UNIQUE_TEMP_PASSWORD
+
+runcmd:
+  - - bash
+    - -ceu
+    - |
+      install -d -m 0700 /run/portainer-bootstrap
+      install -d -m 0700 /opt/vm-provisioning
+      cd /opt/vm-provisioning
+      curl -fsSL --retry 3 https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/7081211b2df63b1fbf79d35b2b26dd3f28b0b5ac/VM-Provisioning/scripts/base.sh -o base.sh
+      curl -fsSL --retry 3 https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/7081211b2df63b1fbf79d35b2b26dd3f28b0b5ac/VM-Provisioning/scripts/docker.sh -o docker.sh
+      curl -fsSL --retry 3 https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/7081211b2df63b1fbf79d35b2b26dd3f28b0b5ac/VM-Provisioning/scripts/portainer-v2.sh -o portainer-v2.sh
+      if grep -qx REPLACE_WITH_UNIQUE_TEMP_PASSWORD /run/portainer-bootstrap/admin-password; then echo "Replace bootstrap password in vCenter"; exit 1; fi
+      bash base.sh
+      bash docker.sh
+      bash portainer-v2.sh
