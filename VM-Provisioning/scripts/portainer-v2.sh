@@ -16,6 +16,7 @@ services:
     image: portainer/portainer-ce:lts
     container_name: portainer
     restart: always
+    command: ["-H", "unix:///var/run/docker.sock"]
     ports:
       - "9443:9443"
       - "8000:8000"
@@ -32,7 +33,7 @@ EOF
 cat > /run/portainer-bootstrap/override.yaml <<'EOF'
 services:
   portainer:
-    command: ["--admin-password-file", "/run/secrets/admin-password"]
+    command: ["-H", "unix:///var/run/docker.sock", "--admin-password-file", "/run/secrets/admin-password"]
     volumes:
       - /run/portainer-bootstrap/admin-password:/run/secrets/admin-password:ro
 EOF
