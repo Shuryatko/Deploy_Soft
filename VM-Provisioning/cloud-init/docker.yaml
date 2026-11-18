@@ -2,11 +2,12 @@
 preserve_hostname: false
 manage_etc_hosts: true
 runcmd:
-  - [bash, -ceu, |
+  - - bash
+    - -ceu
+    - |
       install -d -m 0700 /opt/vm-provisioning
       cd /opt/vm-provisioning
       curl -fsSL --retry 3 https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/0723f91a7881f3b903fea7e207807f0cb9332750/VM-Provisioning/scripts/base.sh -o base.sh
       curl -fsSL --retry 3 https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/0723f91a7881f3b903fea7e207807f0cb9332750/VM-Provisioning/scripts/docker.sh -o docker.sh
       bash base.sh
       bash docker.sh
-    ]
