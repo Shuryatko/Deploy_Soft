@@ -7,8 +7,9 @@ runcmd:
     - |
       install -d -m 0700 /opt/vm-provisioning
       cd /opt/vm-provisioning
-      for script in base postgresql; do
-        curl -fsSL --retry 3 "https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/99aee4adefdcf2429d0431d9550cdb35736bd912/VM-Provisioning/scripts/$script.sh" -o "$script.sh"
+      for script in base postgresql install-postgresql-expansion; do
+        curl -fsSL --retry 3 "https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/8579cc85dfea68446fed1aab5039fd0ce7372025/VM-Provisioning/scripts/$script.sh" -o "$script.sh"
       done
       bash base.sh
       bash postgresql.sh
+      bash install-postgresql-expansion.sh
