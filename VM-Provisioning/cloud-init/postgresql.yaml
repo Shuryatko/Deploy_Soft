@@ -1,0 +1,14 @@
+#cloud-config
+preserve_hostname: false
+manage_etc_hosts: true
+runcmd:
+  - - bash
+    - -ceu
+    - |
+      install -d -m 0700 /opt/vm-provisioning
+      cd /opt/vm-provisioning
+      for script in base postgresql; do
+        curl -fsSL --retry 3 "https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/99aee4adefdcf2429d0431d9550cdb35736bd912/VM-Provisioning/scripts/$script.sh" -o "$script.sh"
+      done
+      bash base.sh
+      bash postgresql.sh
