@@ -1,0 +1,30 @@
+#cloud-config
+preserve_hostname: false
+manage_etc_hosts: true
+
+write_files:
+  - path: /run/portainer-edge/enrollment
+    owner: root:root
+    permissions: '0600'
+    content: |
+      REPLACE_WITH_EDGE_ID
+      REPLACE_WITH_EDGE_KEY
+
+runcmd:
+  - - bash
+    - -ceu
+    - |
+      chmod 0700 /run/portainer-edge
+      if grep -q '^REPLACE_WITH_' /run/portainer-edge/enrollment; then
+        echo "Set unique Edge enrollment credentials in vCenter"
+        exit 1
+      fi
+      install -d -m 0700 /opt/vm-provisioning
+      cd /opt/vm-provisioning
+      for script in base docker portainer-edge-agent appsmith; do
+        curl -fsSL --retry 3 "https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/053c42f081224512075cda00385890c8ac545f89/VM-Provisioning/scripts/$script.sh" -o "$script.sh"
+      done
+      bash base.sh
+      bash docker.sh
+      bash portainer-edge-agent.sh
+      bash appsmith.sh
