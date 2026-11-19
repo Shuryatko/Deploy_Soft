@@ -1,0 +1,39 @@
+#cloud-config
+preserve_hostname: false
+manage_etc_hosts: true
+
+write_files:
+  - path: /run/portainer-edge/enrollment
+    owner: root:root
+    permissions: '0600'
+    content: |
+      REPLACE_WITH_EDGE_ID
+      REPLACE_WITH_EDGE_KEY
+  - path: /run/dbgate-bootstrap/password
+    owner: root:root
+    permissions: '0600'
+    content: |-
+      REPLACE_WITH_DBGATE_PASSWORD
+
+runcmd:
+  - - bash
+    - -ceu
+    - |
+      chmod 0700 /run/portainer-edge /run/dbgate-bootstrap
+      if grep -q '^REPLACE_WITH_' /run/portainer-edge/enrollment /run/dbgate-bootstrap/password; then
+        echo "Set unique enrollment credentials and DbGate password in vCenter"
+        exit 1
+      fi
+      if ! grep -Eq '^[A-Za-z0-9_-]{16,128}$' /run/dbgate-bootstrap/password; then
+        echo "DbGate password must be 16-128 letters/digits/underscore/hyphen"
+        exit 1
+      fi
+      install -d -m 0700 /opt/vm-provisioning
+      cd /opt/vm-provisioning
+      for script in base docker portainer-edge-agent dbgate; do
+        curl -fsSL --retry 3 "https://raw.githubusercontent.com/Shuryatko/Deploy_Soft/9edd9a5fea54899e78ce6e4706800f0066a8cfeb/VM-Provisioning/scripts/$script.sh" -o "$script.sh"
+      done
+      bash base.sh
+      bash docker.sh
+      bash portainer-edge-agent.sh
+      bash dbgate.sh
