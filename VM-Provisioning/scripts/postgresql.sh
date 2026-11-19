@@ -53,8 +53,14 @@ else
   echo "Using system disk for PostgreSQL data"
 fi
 export DEBIAN_FRONTEND=noninteractive
+apt-get -o DPkg::Lock::Timeout=180 install -y postgresql-common
+# Set initdb options before the server package creates its default cluster.
+install -d -m 0755 /etc/postgresql-common/createcluster.d
+printf "initdb_options = '--data-checksums'\n" > /etc/postgresql-common/createcluster.d/99-deploy-soft.conf
 apt-get -o DPkg::Lock::Timeout=180 install -y postgresql-16 postgresql-client-16
 systemctl enable --now postgresql
 pg_isready -h 127.0.0.1 -p 5432
 runuser -u postgres -- psql -X -v ON_ERROR_STOP=1 -Atc 'SHOW data_directory;'
+[[ "$(runuser -u postgres -- psql -X -v ON_ERROR_STOP=1 -Atc 'SHOW data_checksums;')" == on ]] || die "Data checksums not enabled"
+echo "PostgreSQL data checksums enabled"
 echo "PostgreSQL provisioning complete; remote access not enabled"
